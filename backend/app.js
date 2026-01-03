@@ -19,8 +19,11 @@ dotenv.config({path : './.env'});
 
 // CORS configuration
 const allowedOrigins = process.env.FRONTEND_URL 
-    ? process.env.FRONTEND_URL.split(',') 
+    ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
     : ['http://localhost:5174'];
+
+console.log('Allowed CORS origins:', allowedOrigins);
+console.log('NODE_ENV:', process.env.NODE_ENV);
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -32,12 +35,14 @@ app.use(cors({
         )) {
             callback(null, true);
         } else {
+            console.log('CORS blocked origin:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true, 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
 }));
 app.use(express.json());
 app.use(express.urlencoded({extended : true}));
@@ -49,11 +54,8 @@ app.get('/', (req, res)=> {
 
 // Public routes (no authentication required)
 app.use('/api/auth', authRoute);
-app.get('/:shortUrl', redirectShortUrl);
-
-// Protected routes (authentication required)
-app.use(authMiddleware)
 app.use('/api/create', shorturlRouter);
+app.get('/:shortUrl', redirectShortUrl);
 
 app.use((req, res, next) => {
     next(new AppError(`Can't find ${req.url}`, 404));

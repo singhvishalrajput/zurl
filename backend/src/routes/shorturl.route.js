@@ -4,7 +4,7 @@ import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-router.post("/", authMiddleware, createShortUrl);       
+router.post("/", createShortUrl);       
 router.get("/my-urls", authMiddleware, getMyUrls);
 router.get("/check/:slug", checkShortUrlAvailability);          
 

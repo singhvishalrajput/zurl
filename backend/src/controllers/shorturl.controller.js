@@ -5,10 +5,15 @@ import { getShortUrl, shortUrlExists, getUserUrls} from '../dao/shorturl.dao.js'
 import catchAsync from "../utils/catchasync.js";
 import { AppError } from "../utils/errorHandler.js";
 
-export const createShortUrl = catchAsync(async (req, res)=> {
+export const createShortUrl = catchAsync(async (req, res, next)=> {
     let {url, slug} = req.body;
     const user = req.user;
     console.log("Create Short URL User :", user);
+
+    // If custom slug is provided, authentication is required
+    if(slug && !user) {
+        return next(new AppError('Authentication required to create custom short URLs', 401));
+    }
 
     if(!url.startsWith('http://') && !url.startsWith('https://')){
         url = `http://${url}`;
